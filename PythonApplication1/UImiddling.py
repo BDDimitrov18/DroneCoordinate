@@ -23,6 +23,11 @@ def StartMIdUi():
                 sg.In(), sg.FolderBrowse(),
                 sg.OK(key="-RESULT-")
             ],
+            [        
+                sg.Text('Result File Name For Calculated Points'),
+                sg.In(), sg.FolderBrowse(),
+                sg.OK(key="-RESULTCALC-")
+            ],
             [
                 sg.Button('Run the program',key = "-RUN-")
             ]
@@ -36,6 +41,7 @@ def StartMIdUi():
     offset =.0
     path = ""
     resultPath = ""
+    resultPathCalc = ""
     name = ""
     while True:
         event, values = window.read()
@@ -54,9 +60,13 @@ def StartMIdUi():
             resultPath = values[2]
             resultPath+= "/Done-" + name
             print(resultPath)
+        if event == "-RESULTCALC-":
+            resultPath = values[2]
+            resultPath+= "/DoneCALC-" + name
+            print(resultPathCalc)
         if event == "-RUN-":
             print("running the scripts")
-            CalculateMidPoint.calculateMidPointFunc(path,resultPath,offset)
+            CalculateMidPoint.calculateMidPointFunc(path,resultPath,resultPathCalc,offset)
         
     
     window.close()

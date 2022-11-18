@@ -33,10 +33,16 @@ class EventLine:
     def PrintObj(self):
         print(f"{self.time} {self.B} {self.L} {self.H}")
 
+class SinglePair:
+    def __init__(self, FirstEventLine,SecondEventLine):
+        self.first = FirstEventLine;
+        self.second = SecondEventLine
 
 
-def calculateMidPointFunc(inputPath,outputPath, offset):
+
+def calculateMidPointFunc(inputPath,outputPath,resultPathCalc, offset):
     EventLines = []
+    SinglePoints = []
 
     br = 0
     with open(inputPath) as f:
@@ -54,9 +60,11 @@ def calculateMidPointFunc(inputPath,outputPath, offset):
         return (y1-y2)
 
     DoneFile = open(outputPath, 'w')
+    ResultFileCalc = open(resultPathCalc, 'w')
     print(len(EventLines))
     i=0
     counter = 0
+    differenceFloatSum=0
     h=0
     while i < len(EventLines)-1:
         h+=EventLines[i].H+EventLines[i+1].H
@@ -76,9 +84,12 @@ def calculateMidPointFunc(inputPath,outputPath, offset):
             s = math.sqrt(pow(DeltaX,2) + pow(DeltaY,2) + pow(DeltaZ,2))
             if(differenceFloat >=0.35 and differenceFloat<=0.45):
               s1 = s/2 + offset # + offset
+              differenceFloat /=2
           
             else:
               s1 = s/3 + offset # + offset
+              differenceFloat /=3
+              differenceFloat *=2
              
             Xmid = (DeltaX/s)*s1 + float(EventLines[i].X)
             Ymid = (DeltaY/s)*s1 + float(EventLines[i].Y)
@@ -86,10 +97,42 @@ def calculateMidPointFunc(inputPath,outputPath, offset):
        
             DoneFile.write(str(counter)+ " " + str(round(Xmid,3)) +  " " + str(round(Ymid,3)) + " " + str(round(Zmid,3))+"\n")
             counter+=1
+
+            differenceFloatSum += differenceFloat
+
             i+=2
 
         else:
+            SinglePoints.append(SinglePair(EventLines[i],EventLines[i+1]))
             i+=1
+
+        differenceFloatAverage = differenceFloatSum/counter
+        i=0
+        counter =0
+        while i < len(SinglePoints):
+            DeltaX = deltaFunc(SinglePoints[i].second.X,SinglePoints[i].first.X)
+            DeltaY = deltaFunc(SinglePoints[i].second.Y,SinglePoints[i].first.Y)
+            DeltaZ = deltaFunc(SinglePoints[i].second.Z,SinglePoints[i].first.Z)
+
+            s = math.sqrt(pow(DeltaX,2) + pow(DeltaY,2) + pow(DeltaZ,2))
+
+            V=s/(SinglePoints[i].second.time-SinglePoints[i].first.time)
+
+            s1 = s/(differenceFloatAverage*V)
+
+            Xmid = (DeltaX/s)*s1 + float(EventLines[i].X)
+            Ymid = (DeltaY/s)*s1 + float(EventLines[i].Y)
+            Zmid = (DeltaZ/s)*s1 + float(EventLines[i].Z)
+
+            ResultFileCalc.write(str(counter) + " " + str(round(Xmid,3)) +  " " + str(round(Ymid,3)) + " " + str(round(Zmid,3))+"\n")
+            counter +=1
+            i+=2
+
+
+            
+
+
+
 
     h/=(len(EventLines)-1)
     DoneFile.write(str(h))
