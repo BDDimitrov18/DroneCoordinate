@@ -82,6 +82,8 @@ def calculateMidPointFunc(inputPath,outputPath,resultPathCalc, offset):
         
             EventLines[i+1].line = EventLines[i+1].line.replace("\n","")
             s = math.sqrt(pow(DeltaX,2) + pow(DeltaY,2) + pow(DeltaZ,2))
+            #bez da promenqme vremeto
+            #s/0.5  = deltaT
             if(differenceFloat >=0.35 and differenceFloat<=0.45):
               s1 = s/2 + offset # + offset
               differenceFloat /=2

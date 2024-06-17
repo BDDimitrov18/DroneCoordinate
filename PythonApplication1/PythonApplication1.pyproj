@@ -21,12 +21,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CalcTimeForPoint.py" />
     <Compile Include="CalculateMidPoint.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ExtractExif.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="HTMCalcTimeUI.py" />
     <Compile Include="MatchFiles.py">
       <SubType>Code</SubType>
     </Compile>
