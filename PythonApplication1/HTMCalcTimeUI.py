@@ -1,9 +1,9 @@
 import PySimpleGUI as sg
 import os
-import calcTimeForPoints
+import CalcTimeForPoint
 
 def runUi():
-# Define the layout for the GUI
+    # Define the layout for the GUI
     layout = [
         [sg.Text('Input Path'), sg.Input(key='input_path'), sg.FileBrowse()],
         [sg.Text('Output Path'), sg.Input(key='output_path'), sg.FolderBrowse()],
@@ -23,13 +23,23 @@ def runUi():
             break
         if event == 'Run Program':
             input_path = values['input_path']
-            output_path = os.path.join(values['output_path'], values['result_filename'])
+            output_path = values['output_path']
+            result_filename = values['result_filename']
             start_hour = values['start_hour']
             start_date = values['start_date']
-        
+
+            # Ensure the filename ends with .htm
+            if not result_filename.lower().endswith('.htm'):
+                result_filename += '.htm'
+
+            full_output_path = os.path.join(output_path, result_filename)
+
             # Call the calcTimeForPoints function with the provided inputs
-            calcTimeForPoints(input_path, output_path, start_date, start_hour)
+            CalcTimeForPoint.calcTimeForPoints(input_path, full_output_path, start_date, start_hour)
             sg.popup('Program completed successfully!')
 
     # Close the window
     window.close()
+
+if __name__ == "__main__":
+    runUi()
