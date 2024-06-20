@@ -5,7 +5,7 @@ a = Analysis(
     ['PythonApplication1.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('CalcTimeForPoint.py', '.'), ('CalculateMidPoint.py', '.'), ('ExtractExif.py', '.'), ('HTMCalcTimeUI.py', '.'), ('MatchFiles.py', '.'), ('UIMatching.py', '.'), ('UImiddling.py', '.'), ('visualInterface.py', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

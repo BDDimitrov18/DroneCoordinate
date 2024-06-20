@@ -2,6 +2,7 @@
 import random
 from pyproj import Proj, transform
 from datetime import datetime, timedelta
+from pyproj import Proj, transform, Transformer
 
 # Define the projections
 wgs84 = Proj(proj='latlong', datum='WGS84')
@@ -19,8 +20,7 @@ class EventLine:
         if len(tokens) == 4:
             self.X = float(tokens[1])
             self.Y = float(tokens[2])
-            self.Z = float(tokens[3])
-            # Convert UTM to geographic coordinates (latitude, longitude, height)
+            self.Z = float(tokens[3])   
             self.B, self.L, self.H = transform(utm35n, wgs84, self.X, self.Y, self.Z)
             # Calculate NG, XG, YG, ZG
             self.NG = a * ((1 - e2 * (math.sin(math.radians(self.B))**2))**(-0.5))
@@ -31,27 +31,39 @@ class EventLine:
             self.X = None
             self.Y = None
             self.Z = None
-            self.B = None
-            self.L = None
-            self.H = None
-            self.NG = None
-            self.XG = None
-            self.YG = None
-            self.ZG = None
-
     def is_valid(self):
         return self.X is not None and self.Y is not None and self.Z is not None
 
     def PrintObj(self):
         print(f"{self.B:.6f} {self.L:.6f} {self.H:.3f}")
 
+class SecondFile:
+    def __init__(self, line):
+        self.line = line
+        tokens = line.split()
+        if len(tokens) == 4:
+            self.X = float(tokens[1])
+            self.Y = float(tokens[2])
+            self.Z = float(tokens[3])          
+        else:
+            self.X = None
+            self.Y = None
+            self.Z = None
+    def is_valid(self):
+        return self.X is not None and self.Y is not None and self.Z is not None
+
+    def PrintObj(self):
+        print(f"{self.B:.6f} {self.L:.6f} {self.H:.3f}")
+
+
 def deltaFunc(y1, y2):
     y1 = float(y1)
     y2 = float(y2)
     return abs(y1 - y2)
 
-def calcTimeForPoints(inputPath, outputPath, date, startHour):
+def calcTimeForPoints(inputPath,secondPath, outputPath, date, startHour, objectName):
     EventLines = []
+    SecondLines = []
     startHour = datetime.strptime(startHour, '%H:%M:%S')
     
     with open(inputPath, 'r', encoding='utf-8') as f:
@@ -60,12 +72,16 @@ def calcTimeForPoints(inputPath, outputPath, date, startHour):
             event = EventLine(j)
             if event.is_valid():
                 EventLines.append(event)
+    
+    with open(secondPath, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        for j in lines:
+            event = SecondFile(j)
+            if event.is_valid():
+                SecondLines.append(event)
                 
     i = 0 
-    while i < len(EventLines):
-          
-        
-        
+    while i < len(EventLines):        
         if i == 0:
             EventLines[i].timePoint = startHour
         else:
@@ -83,57 +99,54 @@ def calcTimeForPoints(inputPath, outputPath, date, startHour):
     with open(outputPath, 'w', encoding='utf-8') as f:
         # Write the HTML header
         f.write('<HTML xmlns:msxsl="urn:schemas-microsoft-com:xslt">\n')
+        f.write('<HEAD>\n')
         f.write('<TITLE>GNSS измервания</TITLE>\n')
-        f.write('<H1>GNSS измервания</H1>\n')
-        f.write('<H2>nov_ofis_vik_k</H2>\n')
+        f.write('<STYLE>\n')
+        f.write('table, th, td { border: 1px solid black; border-collapse: collapse; }\n')  # Add border to all table elements
+        f.write('th { font-size: small; text-align: center; }\n')  # Adjust the font size and alignment for table headers
+        f.write('td { text-align: center; }\n')  # Ensure table data cells are also centered
+        f.write('</STYLE>\n')
+        f.write('</HEAD>\n')
         f.write('<BODY>\n')
-        f.write('<TABLE BORDER="5" width="150%" cellpadding="1" rules="cols">\n')
+        f.write('<H1>GNSS измервания</H1>\n')
+        f.write(f'<H2>{objectName}</H2>\n')
+        f.write('<TABLE width="100%" cellpadding="1" rules="cols">\n')
         f.write('<TR>\n')
-        f.write('<TH width="5%" align="center">Номер точка</TH>\n')
-        f.write('<TH width="5%" align="center">Север (X)m</TH>\n')
-        f.write('<TH width="5%" align="center">Изток (Y)m</TH>\n')
-        f.write('<TH width="5%" align="center">Кота (H)m</TH>\n')
-        f.write('<TH width="5%" align="center">X (ECEF)</TH>\n')
-        f.write('<TH width="5%" align="center">Y (ECEF)</TH>\n')
-        f.write('<TH width="5%" align="center">Z (ECEF)</TH>\n')
-        f.write('<TH width="5%" align="center">Дата</TH>\n')
-        f.write('<TH width="5%" align="center">Час</TH>\n')
-        f.write('<TH width="5%" align="center">Епохи</TH>\n')
-        f.write('<TH width="5%" align="center">Хор.точ.(m)</TH>\n')
-        f.write('<TH width="5%" align="center">Верт.точ.(m)</TH>\n')
-        f.write('<TH width="5%" align="center">Тип Решение</TH>\n')
+        f.write('<TH width="5%">Номер точка</TH>\n')
+        f.write('<TH width="5%">Север (X)m</TH>\n')
+        f.write('<TH width="5%">Изток (Y)m</TH>\n')
+        f.write('<TH width="5%">Кота (H)m</TH>\n')
+        f.write('<TH width="5%">X (ECEF)</TH>\n')
+        f.write('<TH width="5%">Y (ECEF)</TH>\n')
+        f.write('<TH width="5%">Z (ECEF)</TH>\n')
+        f.write('<TH width="5%">Дата</TH>\n')
+        f.write('<TH width="5%">Час</TH>\n')
+        f.write('<TH width="5%">Епохи</TH>\n')
+        f.write('<TH width="5%">Хор.точ.(m)</TH>\n')
+        f.write('<TH width="5%">Верт.точ.(m)</TH>\n')
+        f.write('<TH width="5%">Тип Решение</TH>\n')
         f.write('</TR>\n')
-        f.write('</TABLE>\n')
 
-        for i, event in enumerate(EventLines):
-            hor_toc = str(0.01) + str(round(random.random() * 10))
-            vert_toc = str(0.01) + str(round(random.random() * 10))
-            f.write('<TABLE BORDER="1" width="150%" cellpadding="1" rules="cols">\n')
+        for i, (event, second) in enumerate(zip(EventLines, SecondLines)):
+            hor_toc = str(0.01) + str(round(random.random() * 9))
+            vert_toc = str(0.01) + str(round(random.random() * 9))
             f.write('<TR>\n')
-            f.write(f'<TD width="5%" align="center">{i+1}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{event.X:.3f}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{event.Y:.3f}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{event.Z:.3f}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{event.XG:.3f}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{event.YG:.3f}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{event.ZG:.3f}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{date}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{event.timePoint.strftime("%H:%M:%S")}</TD>\n')
-            f.write(f'<TD width="5%" align="center">3</TD>\n')
-            f.write(f'<TD width="5%" align="center">{hor_toc}</TD>\n')
-            f.write(f'<TD width="5%" align="center">{vert_toc}</TD>\n')
-            f.write(f'<TD width="5%" align="center">NetworkRTK</TD>\n')
+            f.write(f'<TD width="5%">{i+1}</TD>\n')
+            f.write(f'<TD width="5%">{event.X:.3f}</TD>\n')
+            f.write(f'<TD width="5%">{event.Y:.3f}</TD>\n')
+            f.write(f'<TD width="5%">{event.Z:.3f}</TD>\n')
+            f.write(f'<TD width="5%">{second.X:.3f}</TD>\n')
+            f.write(f'<TD width="5%">{second.Y:.3f}</TD>\n')
+            f.write(f'<TD width="5%">{second.Z:.3f}</TD>\n')
+            f.write(f'<TD width="5%">{date}</TD>\n')
+            f.write(f'<TD width="5%">{event.timePoint.strftime("%H:%M:%S")}</TD>\n')
+            f.write(f'<TD width="5%">3</TD>\n')
+            f.write(f'<TD width="5%">{hor_toc}</TD>\n')
+            f.write(f'<TD width="5%">{vert_toc}</TD>\n')
+            f.write(f'<TD width="5%">NetworkRTK</TD>\n')
             f.write('</TR>\n')
-            f.write('</TABLE>\n')
 
-        # Close the HTML tags
+        f.write('</TABLE>\n')
         f.write('</BODY>\n')
         f.write('</HTML>\n')
 
-# Example usage
-inputPath = r'C:\Users\dell\Downloads\лесопарк-снимка_2005_utm_N35_balt.txt'  # replace with your actual input file path
-outputPath = r'C:\Users\dell\Downloads\result.htm'  # replace with your desired output file path
-date = '21.02.2024'  # example date
-startHour = '15:00:00'  # example start hour
-
-calcTimeForPoints(inputPath, outputPath, date, startHour)

@@ -5,9 +5,11 @@ import CalcTimeForPoint
 def runUi():
     # Define the layout for the GUI
     layout = [
-        [sg.Text('Input Path'), sg.Input(key='input_path'), sg.FileBrowse()],
+        [sg.Text('Umt Path'), sg.Input(key='input_path'), sg.FileBrowse()],
+        [sg.Text('Geocentric Path'), sg.Input(key='second_path'), sg.FileBrowse()],
         [sg.Text('Output Path'), sg.Input(key='output_path'), sg.FolderBrowse()],
         [sg.Text('Result Filename'), sg.Input(key='result_filename')],
+        [sg.Text('Object Name'), sg.Input(key='object_name')],
         [sg.Text('Start Hour (HH:MM:SS)'), sg.Input(key='start_hour')],
         [sg.Text('Start Date (DD.MM.YYYY)'), sg.Input(key='start_date')],
         [sg.Button('Run Program')]
@@ -23,8 +25,10 @@ def runUi():
             break
         if event == 'Run Program':
             input_path = values['input_path']
+            second_path = values['second_path']
             output_path = values['output_path']
             result_filename = values['result_filename']
+            object_name = values['object_name']
             start_hour = values['start_hour']
             start_date = values['start_date']
 
@@ -35,7 +39,7 @@ def runUi():
             full_output_path = os.path.join(output_path, result_filename)
 
             # Call the calcTimeForPoints function with the provided inputs
-            CalcTimeForPoint.calcTimeForPoints(input_path, full_output_path, start_date, start_hour)
+            CalcTimeForPoint.calcTimeForPoints(input_path,second_path, full_output_path, start_date, start_hour,object_name)
             sg.popup('Program completed successfully!')
 
     # Close the window
